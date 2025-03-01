@@ -45,15 +45,15 @@ app.post('/api/products', async (req, res) => {
     }
 });
 
-// Fetch all products
+/// Fetch all products (sorted by creation date, newest first)
 app.get('/api/products', async (req, res) => {
-    try {
-        const products = await Product.find();
-        res.json(products);
-    } catch (error) {
-        console.error('Error fetching products:', error);
-        res.status(500).json({ message: 'Server Error' });
-    }
+  try {
+    const products = await Product.find().sort({ _id: -1 }); // Sort by _id in descending order
+    res.json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
 });
 
 app.get('/', (req, res) => {
