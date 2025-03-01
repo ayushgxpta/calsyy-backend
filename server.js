@@ -4,25 +4,22 @@ require('dotenv').config();
 const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Use PORT from environment variables
-const MONGODB_URI = process.env.MONGODB_URI; // Use MONGODB_URI from environment variables
+const PORT = process.env.PORT || 3000;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
     console.error("❌ MONGODB_URI is not defined. Make sure your .env file is set up correctly.");
     process.exit(1);
 }
 
-// Increase request size limit to 10MB
 app.use(express.json({ limit: '10mb' }));
 app.use(cors());
 
-// Connect to MongoDB with a timeout
 mongoose.connect(MONGODB_URI, {
-    serverSelectionTimeoutMS: 30000 // 30 seconds
+    serverSelectionTimeoutMS: 30000
 }).then(() => console.log('✅ Connected to MongoDB Atlas'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// Product Schema
 const productSchema = new mongoose.Schema({
     name: String,
     price: Number,
@@ -45,20 +42,32 @@ app.post('/api/products', async (req, res) => {
     }
 });
 
-/// Fetch all products (sorted by creation date, newest first)
+// Fetch all products (sorted by creation date, newest first)
 app.get('/api/products', async (req, res) => {
-  try {
-    const products = await Product.find().sort({ _id: -1 }); // Sort by _id in descending order
-    res.json(products);
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({ message: 'Server Error' });
-  }
+    try {
+        const products = await Product.find().sort({ _id: -1 });
+        res.json(products);
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        res.status(500).json({ message: 'Server Error' });
+    }
 });
 
-app.get('/', (req, res) => {
-    res.send('Calsyy API is running!');
+// Fetch a single product by ID
+app.get('/api/products/:id', async (req, res) => {
+    try {
+        const productId = req.params.id;
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        res.json(product);
+    } catch (error) {
+        console.error('Error fetching product:', error);
+        res.status(500).json({ message: 'Server Error' });
+    }
 });
+
 // Delete a product by ID
 app.delete('/api/products/:id', async (req, res) => {
     try {
@@ -73,7 +82,46 @@ app.delete('/api/products/:id', async (req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 });
+
+// Serve dynamic product pages
+app.get('/product/:id', async (req, res) => {
+    try {
+        const productId = req.params.id;
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).send('Product not found');
+        }
+
+        // Render the product page dynamically
+        const html = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${product.name}</title>
+            </head>
+            <body>
+                <h1>${product.name}</h1>
+                <img src="${product.image}" alt="${product.name}" style="max-width: 100%;">
+                <p>${product.description || 'No description available'}</p>
+                <p>Price: $${product.price}</p>
+                <p>Category: ${product.category}</p>
+            </body>
+            </html>
+        `;
+
+        res.send(html);
+    } catch (error) {
+        console.error('Error generating product page:', error);
+        res.status(500).send('Server Error');
+    }
+});
+
+app.get('/', (req, res) => {
+    res.send('Calsyy API is running!');
+});
+
 app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
 });
-
