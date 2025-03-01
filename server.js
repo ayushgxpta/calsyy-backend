@@ -4,21 +4,25 @@ require('dotenv').config();
 const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI;
+const PORT = process.env.PORT || 3000; // Use PORT from environment variables
+const MONGODB_URI = process.env.MONGODB_URI; // Use MONGODB_URI from environment variables
 
 if (!MONGODB_URI) {
     console.error("❌ MONGODB_URI is not defined. Make sure your .env file is set up correctly.");
     process.exit(1);
 }
 
-app.use(express.json());
+// Increase request size limit to 10MB
+app.use(express.json({ limit: '10mb' }));
 app.use(cors());
 
+// Connect to MongoDB with a timeout
 mongoose.connect(MONGODB_URI, {
+    serverSelectionTimeoutMS: 30000 // 30 seconds
 }).then(() => console.log('✅ Connected to MongoDB Atlas'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
+// Product Schema
 const productSchema = new mongoose.Schema({
     name: String,
     price: Number,
@@ -48,7 +52,7 @@ app.get('/api/products', async (req, res) => {
         res.json(products);
     } catch (error) {
         console.error('Error fetching products:', error);
-        res.status(500).send('Server Error');
+        res.status(500).json({ message: 'Server Error' });
     }
 });
 
