@@ -59,7 +59,21 @@ app.get('/api/products', async (req, res) => {
 app.get('/', (req, res) => {
     res.send('Calsyy API is running!');
 });
-
+// Delete a product by ID
+app.delete('/api/products/:id', async (req, res) => {
+    try {
+        const productId = req.params.id;
+        const deletedProduct = await Product.findByIdAndDelete(productId);
+        if (!deletedProduct) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        res.status(200).json({ message: 'Product deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
 app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
 });
+
