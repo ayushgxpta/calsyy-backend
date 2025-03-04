@@ -28,11 +28,11 @@ mongoose.connect(MONGODB_URI, {
 
 // Product Schema
 const productSchema = new mongoose.Schema({
-    name: { type: String, required: true }, // Product Name
-    retailPrice: { type: Number, required: true }, // Retail Price
-    salePrice: { type: Number, required: true }, // Sale Price
-    description: { type: String, required: true }, // Product Description
-    images: { type: [String], required: true } // Array of image URLs (5-10 images)
+    name: { type: String, required: true },
+    retailPrice: { type: Number, required: true },
+    salePrice: { type: Number, required: true },
+    description: { type: String, required: true },
+    images: { type: [String], required: true } // Array of image URLs
 });
 
 const Product = mongoose.model('Product', productSchema);
@@ -45,7 +45,7 @@ app.get('/', (req, res) => {
 });
 
 // Fetch all products
-app.get('/products', async (req, res) => {
+app.get('/api/products', async (req, res) => {
     try {
         const products = await Product.find();
         res.json(products);
@@ -56,7 +56,7 @@ app.get('/products', async (req, res) => {
 });
 
 // Fetch a single product by ID
-app.get('/products/:id', async (req, res) => {
+app.get('/api/products/:id', async (req, res) => {
     try {
         const productId = req.params.id;
 
@@ -77,7 +77,7 @@ app.get('/products/:id', async (req, res) => {
 });
 
 // Add a new product
-app.post('/products', async (req, res) => {
+app.post('/api/products', async (req, res) => {
     try {
         const { name, retailPrice, salePrice, description, images } = req.body;
 
@@ -96,7 +96,7 @@ app.post('/products', async (req, res) => {
 });
 
 // Update a product by ID
-app.put('/products/:id', async (req, res) => {
+app.put('/api/products/:id', async (req, res) => {
     try {
         const productId = req.params.id;
 
@@ -130,7 +130,7 @@ app.put('/products/:id', async (req, res) => {
 });
 
 // Delete a product by ID
-app.delete('/products/:id', async (req, res) => {
+app.delete('/api/products/:id', async (req, res) => {
     try {
         const productId = req.params.id;
 
