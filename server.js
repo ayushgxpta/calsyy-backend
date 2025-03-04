@@ -71,6 +71,12 @@ app.get('/api/products', async (req, res) => {
 app.get('/api/products/:id', async (req, res) => {
     try {
         const productId = req.params.id;
+
+        // Check if the productId is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({ message: 'Invalid product ID' });
+        }
+
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
@@ -86,6 +92,12 @@ app.get('/api/products/:id', async (req, res) => {
 app.put('/api/products/:id', async (req, res) => {
     try {
         const productId = req.params.id;
+
+        // Check if the productId is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({ message: 'Invalid product ID' });
+        }
+
         const { name, price, image, category, description } = req.body;
 
         // Find the product by ID and update it
@@ -110,6 +122,12 @@ app.put('/api/products/:id', async (req, res) => {
 app.delete('/api/products/:id', async (req, res) => {
     try {
         const productId = req.params.id;
+
+        // Check if the productId is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({ message: 'Invalid product ID' });
+        }
+
         const deletedProduct = await Product.findByIdAndDelete(productId);
         if (!deletedProduct) {
             return res.status(404).json({ message: 'Product not found' });
@@ -125,6 +143,12 @@ app.delete('/api/products/:id', async (req, res) => {
 app.get('/product/:id', async (req, res) => {
     try {
         const productId = req.params.id;
+
+        // Check if the productId is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).send('Invalid product ID');
+        }
+
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).send('Product not found');
