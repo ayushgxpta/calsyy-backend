@@ -28,10 +28,11 @@ mongoose.connect(MONGODB_URI, {
 
 // Product Schema
 const productSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    price: { type: Number, required: true },
-    image: { type: String, required: true },
-    category: { type: String, required: true }
+    name: { type: String, required: true }, // Product Name
+    retailPrice: { type: Number, required: true }, // Retail Price
+    salePrice: { type: Number, required: true }, // Sale Price
+    description: { type: String, required: true }, // Product Description
+    images: { type: [String], required: true } // Array of image URLs (5-10 images)
 });
 
 const Product = mongoose.model('Product', productSchema);
@@ -78,14 +79,14 @@ app.get('/products/:id', async (req, res) => {
 // Add a new product
 app.post('/products', async (req, res) => {
     try {
-        const { name, price, image, category } = req.body;
+        const { name, retailPrice, salePrice, description, images } = req.body;
 
         // Validate required fields
-        if (!name || !price || !image || !category) {
-            return res.status(400).json({ message: 'All fields are required' });
+        if (!name || !retailPrice || !salePrice || !description || !images || images.length === 0) {
+            return res.status(400).json({ message: 'All fields are required, including at least one image' });
         }
 
-        const newProduct = new Product({ name, price, image, category });
+        const newProduct = new Product({ name, retailPrice, salePrice, description, images });
         await newProduct.save();
         res.status(201).json(newProduct);
     } catch (error) {
@@ -104,16 +105,16 @@ app.put('/products/:id', async (req, res) => {
             return res.status(400).json({ message: 'Invalid product ID' });
         }
 
-        const { name, price, image, category } = req.body;
+        const { name, retailPrice, salePrice, description, images } = req.body;
 
         // Validate required fields
-        if (!name || !price || !image || !category) {
-            return res.status(400).json({ message: 'All fields are required' });
+        if (!name || !retailPrice || !salePrice || !description || !images || images.length === 0) {
+            return res.status(400).json({ message: 'All fields are required, including at least one image' });
         }
 
         const updatedProduct = await Product.findByIdAndUpdate(
             productId,
-            { name, price, image, category },
+            { name, retailPrice, salePrice, description, images },
             { new: true } // Return the updated product
         );
 
