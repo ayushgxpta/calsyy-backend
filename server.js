@@ -106,6 +106,30 @@ app.put('/api/products/:id', async (req, res) => {
     }
 });
 
+// Edit a product by ID
+app.put('/api/products/:id', async (req, res) => {
+    try {
+        const productId = req.params.id;
+        const { name, price, image, category, description } = req.body;
+
+        // Find the product by ID and update it
+        const updatedProduct = await Product.findByIdAndUpdate(
+            productId,
+            { name, price, image, category, description },
+            { new: true } // Return the updated product
+        );
+
+        if (!updatedProduct) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        res.status(200).json(updatedProduct);
+    } catch (error) {
+        console.error('Error updating product:', error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
 // Delete a product by ID
 app.delete('/api/products/:id', async (req, res) => {
     try {
