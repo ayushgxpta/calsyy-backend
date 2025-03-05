@@ -17,7 +17,9 @@ if (!MONGODB_URI) {
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
-app.use(cors());
+app.use(cors({
+    origin: '*' // Allow all origins (replace with your frontend URL in production)
+}));
 app.use(helmet()); // Add security headers
 app.use(morgan('dev')); // Log HTTP requests (optional)
 
@@ -32,7 +34,7 @@ mongoose.connect(MONGODB_URI, {
 
 // Product Schema
 const productSchema = new mongoose.Schema({
-     name: { type: String, required: true },
+    name: { type: String, required: true },
     price: { type: Number, required: true },
     correctedPrice: { type: Number }, // Corrected price (optional)
     images: { type: [String], required: true }, // Stores product images (no limit)
@@ -40,7 +42,6 @@ const productSchema = new mongoose.Schema({
     category: { type: String, required: true },
     description: { type: String },
     miniDescription: { type: String }, // New field for mini description
-    
     reviews: {
         customer1: { type: String },
         customer2: { type: String },
@@ -63,7 +64,7 @@ const Product = mongoose.model('Product', productSchema);
 app.post('/api/products', async (req, res) => {
     try {
         const { 
-            name, price, correctedPrice, images, descriptionImages, category, description, miniDescription, 
+            name, price, correctedPrice, images, descriptionPictures, category, description, miniDescription, 
             reviews 
         } = req.body;
 
@@ -71,12 +72,12 @@ app.post('/api/products', async (req, res) => {
             return res.status(400).json({ message: "Please provide exactly 5 product images" });
         }
 
-        if (!Array.isArray(descriptionImages) || descriptionImages.length !== 3) {
+        if (!Array.isArray(descriptionPictures) || descriptionPictures.length !== 3) {
             return res.status(400).json({ message: "Please provide exactly 3 description images" });
         }
 
         const newProduct = new Product({ 
-            name, price, correctedPrice, images, descriptionImages, category, description, miniDescription, 
+            name, price, correctedPrice, images, descriptionPictures, category, description, miniDescription, 
             reviews 
         });
 
@@ -87,7 +88,6 @@ app.post('/api/products', async (req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 });
-
 
 // Fetch all products (sorted by creation date, newest first)
 app.get('/api/products', async (req, res) => {
@@ -117,13 +117,12 @@ app.get('/api/products/:id', async (req, res) => {
     }
 });
 
-
 // Update a product by ID
 app.put('/api/products/:id', async (req, res) => {
     try {
         const productId = req.params.id;
         const { 
-            name, price, correctedPrice, images, descriptionImages, category, description, miniDescription, 
+            name, price, correctedPrice, images, descriptionPictures, category, description, miniDescription, 
             reviews 
         } = req.body;
 
@@ -131,39 +130,14 @@ app.put('/api/products/:id', async (req, res) => {
             return res.status(400).json({ message: "Please provide exactly 5 product images" });
         }
 
-        if (descriptionImages && (!Array.isArray(descriptionImages) || descriptionImages.length !== 3)) {
+        if (descriptionPictures && (!Array.isArray(descriptionPictures) || descriptionPictures.length !== 3)) {
             return res.status(400).json({ message: "Please provide exactly 3 description images" });
         }
 
         const updatedProduct = await Product.findByIdAndUpdate(
             productId,
-            { name, price, correctedPrice, images, descriptionImages, category, description, miniDescription, reviews },
+            { name, price, correctedPrice, images, descriptionPictures, category, description, miniDescription, reviews },
             { new: true }
-        );
-
-        if (!updatedProduct) {
-            return res.status(404).json({ message: 'Product not found' });
-        }
-
-        res.status(200).json(updatedProduct);
-    } catch (error) {
-        console.error('Error updating product:', error);
-        res.status(500).json({ message: 'Server Error' });
-    }
-});
-
-
-// Edit a product by ID
-app.put('/api/products/:id', async (req, res) => {
-    try {
-        const productId = req.params.id;
-        const { name, price, image, category, description } = req.body;
-
-        // Find the product by ID and update it
-        const updatedProduct = await Product.findByIdAndUpdate(
-            productId,
-            { name, price, image, category, description },
-            { new: true } // Return the updated product
         );
 
         if (!updatedProduct) {
@@ -212,7 +186,7 @@ app.get('/product/:id', async (req, res) => {
             </head>
             <body>
                 <h1>${product.name}</h1>
-                <img src="${product.image}" alt="${product.name}" style="max-width: 100%;">
+                ${product.images.map(image => `<img src="${image}" alt="${product.name}" style="max-width: 100%;">`).join('')}
                 <p>${product.description || 'No description available'}</p>
                 <p>Price: $${product.price}</p>
                 <p>Category: ${product.category}</p>
