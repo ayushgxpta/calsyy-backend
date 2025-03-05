@@ -32,14 +32,15 @@ mongoose.connect(MONGODB_URI, {
 
 // Product Schema
 const productSchema = new mongoose.Schema({
-    name: { type: String, required: true },
+     name: { type: String, required: true },
     price: { type: Number, required: true },
-    correctedPrice: { type: Number }, // New field for corrected price
-    images: [{ type: String, required: true }], // Array to store 5 product images
-    descriptionImages: [{ type: String, required: true }], // Array for 3 description images
+    correctedPrice: { type: Number }, // Corrected price (optional)
+    images: { type: [String], required: true }, // Stores product images (no limit)
+    descriptionPictures: { type: [String] }, // Stores description images (no limit)
     category: { type: String, required: true },
     description: { type: String },
     miniDescription: { type: String }, // New field for mini description
+    
     reviews: {
         customer1: { type: String },
         customer2: { type: String },
